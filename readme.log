@@ -1,0 +1,96 @@
+# Date: Fri Nov 17 18:21:12 2017
+# Program: ./plsm
+
+# Mode: default
+
+# Arguments:
+    Data file              [sample.tdoc]
+    DocumentLength         [100]
+    Topics                 [3]
+    nTz                    [30]
+    train flag             [1]
+
+# Options:
+    -seed                  [1510914072]
+    -multi                 [1]
+    -inList                
+    -do                    
+    -sor                   [1]
+    -mo                    []
+    -init                  []
+    -initPtrwz             []
+    -initPtrwzScaling      [1]
+    -acc                   [0.0001]
+    -iter                  [50]
+    -lts                   [0]
+    -trwt                  [1]
+    -zth                   [0.95]
+    -writeTaLL             []
+    -prn                   
+    -zp                    
+    -trp                   
+    -alignz                
+    -fitMode               [0]
+    -fit1                  [0]
+    -fit2                  [0]
+
+Examples of PLSM usage:
+======================
+  # Learning with 3 motifs of duration 30 (100 iterations max), output is written to sample.tdoc_03_30.*
+  ./plsm sample.tdoc 1000 3 30 1
+
+  # Same, splitting the input in chunks of 100 time steps
+  ./plsm sample.tdoc 100 3 30 1
+
+  # Same, with multiple initializations
+  ./plsm sample.tdoc 100 3 30 1 -multi 10
+
+  # Same with some sparsity
+  ./plsm sample.tdoc 100 3 30 1 -multi 10 -lts .5
+
+  # listing parameters
+  ./plsm --help
+
+
+Input file (PLSM):
+===============================
+To generalize to other datasets, please have a look at the 'sample.tdoc' file.
+PLSM has a "time" dimension (see below) that PLSA interprets as a "document" dimension.
+PLSM accept both the LDA-C format and the format described below (that is just LDA-C without the nToken information on each line).
+
+Each line corresponds to a time instant and contains a set of 'W:N' entries where W is the word index and N is a count.
+Note that a line can be empty (no observations at this time instant).
+Note that the .tdoc file can contain non-integer counts, e.g. '123:42.7'.
+When loading the file the program first multiplies it by a parameter (-inScale on the command line) and then round it to the closest lower integer.
+
+
+
+Semantic of PLSM output files:
+=============================
+The PLSM output files go by groups and represent the motif tables and the occurrences.
+
+  Motifs:
+  ------
+  .pwz:   normalized p(w|z) probability of a word given a motif
+          * one column per motif
+          * one row per word
+          * each column sums to 1 (might be 0 for an empty motif)
+  .ptrwz: normalized p(tr|w,z) probability  
+          * one column per word
+          * one line per relative time (duration), motifs are stacked
+
+  Occurrences:
+  -----------
+  .pd:    normalized p(d), relative weights between the documents
+          * one row (with a single value) per document
+  .pzd:   normalized p(z|d) probability of a motif given an input document
+          * one column per document
+          * one line per motif
+          * NB: there might be some p(z|d) = 0 (for all z, when a document is empty)
+  .ptszd: normalized p(ts|z,d) probability of a starting time given a topic and a document
+          * one column per motif
+          * one line per time instant, with documents stacked on top of each others
+          * NB: if some p(z|d) = 0 then all p(ts|z,d) are 0 for this z,d ... not really a probablity then
+
+
+
